@@ -1,21 +1,17 @@
-$Id$
-
 Despotify - the open source Spotify client
 http://despotify.se/
 
 
 Source code
 ~~~~~~~~~~
-The latest version of the source code can be checked out from our Subversion repository
-  $ svn checkout https://despotify.svn.sourceforge.net/svnroot/despotify despotify
+The latest version of the source code can be checked out from my github
+  $ git clone git://github.com/kmdm/despotify.git
 
 
 Directories
 ~~~~~~~~~~~
 The checked out source code contains a number of directories
-  java/		This is where one of the available Java implementations go
   src/		This is where the C based client, library and Python bindings go
-  web/		This is where the source code for our web site goes (http://despotify.se)
 
 
 Build instructions for the simple client and library
