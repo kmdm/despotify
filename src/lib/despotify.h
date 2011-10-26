@@ -92,6 +92,9 @@ struct album_browse
     int num_discs;
     struct disc* discs;
 
+    char artist[STRING_LENGTH];
+    char artist_id[33];
+
     /* Maintain backwards compatibility */
     int num_tracks;
     struct track* tracks;
