@@ -30,6 +30,7 @@ struct track
     char album[STRING_LENGTH];
     int length;
     int tracknumber;
+    int discnumber;
     int year;
     float popularity;
     struct track *next; /* in case of multiple tracks
@@ -73,12 +74,28 @@ struct album
     struct album* next;
 };
 
+struct disc
+{
+    int number;
+    char name[STRING_LENGTH];
+    char album[STRING_LENGTH];
+    char album_id[33];
+    int num_tracks;
+    struct track* tracks;
+    struct disc* next; /* in case of multiple discs in an album. */
+};
+
 struct album_browse
 {
     char name[STRING_LENGTH];
     char id[33];
+    int num_discs;
+    struct disc* discs;
+
+    /* Maintain backwards compatibility */
     int num_tracks;
     struct track* tracks;
+
     int year;
     char cover_id[41];
     float popularity;

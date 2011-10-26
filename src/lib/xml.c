@@ -343,6 +343,45 @@ static void parse_artist(ezxml_t top, struct artist *a) {
     xmlatof(&a->popularity, top, "popularity", -1);
 }
 
+static int parse_discs(ezxml_t xml, struct album_browse* a, bool high_bitrate)
+{
+    
+    int disc_count = 0;
+    struct disc* prev = NULL;
+    struct disc* d = a->discs;
+    
+    for (ezxml_t disc = ezxml_get(xml, "disc",-1); disc; disc = disc->next) {
+        if (!d) {
+            d = calloc(1, sizeof(struct disc));
+            prev->next = d;
+        }
+
+        xmlstrncpy(d->name, sizeof d->name, disc, "name", -1);
+        xmlatoi(&d->number, disc, "disc-number", -1);
+        
+        DSFYstrncpy(d->album, a->name, sizeof d->album);
+        DSFYstrncpy(d->album_id, a->id, sizeof d->album_id);
+
+        d->tracks = calloc(1, sizeof(struct track));
+        d->num_tracks = parse_tracks(disc, d->tracks, false, high_bitrate);
+        
+        /* Copy missing metadata from album to tracks */
+        for (struct track* t = d->tracks; t; t = t->next) {
+            DSFYstrncpy(t->album, a->name, sizeof t->album);
+            DSFYstrncpy(t->album_id, a->id, sizeof t->album_id);
+            DSFYstrncpy(t->cover_id, a->cover_id, sizeof t->cover_id);
+            t->year = a->year;
+            t->discnumber = d->number;
+        }
+        
+        prev = d;
+        d = d->next;
+        disc_count++;
+    }
+
+    return disc_count;
+}
+
 static void parse_browse_album(ezxml_t top, struct album_browse* a, bool high_bitrate)
 {
     xmlstrncpy(a->name, sizeof a->name, top, "name", -1);
@@ -351,20 +390,12 @@ static void parse_browse_album(ezxml_t top, struct album_browse* a, bool high_bi
     xmlatoi(&a->year, top, "year", -1);
     xmlatof(&a->popularity, top, "popularity", -1);
 
-    /* TODO: support multiple discs per album  */
-    a->tracks = calloc(1, sizeof(struct track));
-    ezxml_t disc = ezxml_get(top, "discs",0,"disc", -1);
-    a->num_tracks = parse_tracks(disc, a->tracks, false, high_bitrate);
-
-    /* Copy missing metadata from album to tracks */
-    int count = 0;
-    for (struct track *t = a->tracks; t; t = t->next) {
-        DSFYstrncpy(t->album, a->name, sizeof t->album);
-        DSFYstrncpy(t->album_id, a->id, sizeof t->album_id);
-        DSFYstrncpy(t->cover_id, a->cover_id, sizeof t->cover_id);
-        t->year = a->year;
-        count++;
-    }
+    a->discs = calloc(1, sizeof(struct disc));
+    a->num_discs = parse_discs(ezxml_get(top, "discs", -1), a, high_bitrate);
+    
+    /* Backwards compatibility places first disc's tracks under the album. */
+    a->tracks = a->discs->tracks;
+    a->num_tracks = a->discs->num_tracks;
 }
 
 
